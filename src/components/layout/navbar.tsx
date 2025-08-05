@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, Calendar, BarChart3, Target, Plus, Palette } from 'lucide-react'
 import { BackgroundSettings } from '@/components/background-settings'
+import { useUserProfile } from '@/hooks/use-user-profile'
 import { createClient } from '@/utils/supabase/client'
 
 interface NavbarProps {
@@ -14,6 +15,7 @@ interface NavbarProps {
 
 export function Navbar({ user }: NavbarProps) {
   const [isBackgroundSettingsOpen, setIsBackgroundSettingsOpen] = useState(false)
+  const { profile } = useUserProfile()
   const router = useRouter()
   const supabase = createClient()
 
@@ -71,13 +73,32 @@ export function Navbar({ user }: NavbarProps) {
               背景
             </Button>
 
-            <div className="flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span className="text-sm">{user.email}</span>
+            <div className="flex items-center space-x-3">
+              {/* 用户头像和信息 */}
+              <Link href="/profile" className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                  {profile?.avatar ? (
+                    <img
+                      src={profile.avatar}
+                      alt="用户头像"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-white" />
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-900">{profile?.nickname || '用户'}</span>
+                  <span className="text-xs text-gray-500">点击进入用户中心</span>
+                </div>
+              </Link>
+              
+              {/* 登出按钮 */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
+                title="登出"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
