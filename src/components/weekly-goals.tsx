@@ -72,26 +72,12 @@ export function WeeklyGoals() {
 
       setGoals(mergedGoals)
 
-      // Calculate stats for all categories
-      const stats = Object.entries(categoryHours).map(([category, hours]) => {
-        const goal = mergedGoals.find(g => g.task_category === category)
-        return {
-          category,
-          current_hours: hours,
-          target_hours: goal?.target_hours || 0
-        }
-      })
-
-      // Add categories that only have goals
-      mergedGoals.forEach(goal => {
-        if (!stats.find(s => s.category === goal.task_category)) {
-          stats.push({
-            category: goal.task_category,
-            current_hours: goal.current_hours,
-            target_hours: goal.target_hours
-          })
-        }
-      })
+      // Only show categories that have explicit goals set
+      const stats = mergedGoals.map(goal => ({
+        category: goal.task_category,
+        current_hours: goal.current_hours,
+        target_hours: goal.target_hours
+      }))
 
       setCategoryStats(stats)
     } catch (error) {
