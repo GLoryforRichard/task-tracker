@@ -153,7 +153,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-gray-50/90">
       <Navbar user={user} />
       <div className="max-w-2xl mx-auto py-8 px-4">
         {/* 页面头部 */}

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, Calendar, BarChart3, Target, Plus, Palette } from 'lucide-react'
 import { BackgroundSettings } from '@/components/background-settings'
+import { Logo } from '@/components/logo'
 import { useUserProfile } from '@/hooks/use-user-profile'
 import { createClient } from '@/utils/supabase/client'
 
@@ -29,9 +30,7 @@ export function Navbar({ user }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/dashboard" className="text-xl font-bold text-blue-600">
-              任务追踪器
-            </Link>
+            <Logo />
           </div>
 
           <div className="flex items-center space-x-4">

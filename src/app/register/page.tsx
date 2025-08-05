@@ -56,7 +56,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/80 to-indigo-100/80 backdrop-blur-sm flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/90 to-indigo-100/90 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">创建账户</h1>

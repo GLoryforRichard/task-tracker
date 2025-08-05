@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "任务时间追踪器",
-  description: "记录任务和时间的智能追踪工具",
+  title: "PuppyHabits - 习惯追踪器",
+  description: "🐶 跟随小狗一起培养好习惯，记录任务，追踪时间，让每一天都更加高效",
 };
 
 export default function RootLayout({

@@ -4,14 +4,35 @@ import { Calendar, Clock, Target, TrendingUp } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/80 to-indigo-100/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/90 to-indigo-100/90">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            任务时间追踪器
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-xl">
+              {/* 大版小狗图标 */}
+              <div className="relative">
+                {/* 耳朵 */}
+                <div className="absolute -top-2 -left-2 w-4 h-6 bg-purple-600 rounded-full transform rotate-12"></div>
+                <div className="absolute -top-2 -right-2 w-4 h-6 bg-purple-600 rounded-full transform -rotate-12"></div>
+                
+                {/* 脸部 */}
+                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                  {/* 眼睛 */}
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-gray-800 rounded-full"></div>
+                    <div className="w-2 h-2 bg-gray-800 rounded-full"></div>
+                  </div>
+                  {/* 鼻子 */}
+                  <div className="absolute bottom-2 w-1 h-1 bg-pink-500 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 mb-6">
+            PuppyHabits
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            记录你的任务和花费的时间，分析效率，设定目标，让每一天都更有价值
+            🐶 跟随小狗一起培养好习惯，记录你的任务，追踪你的时间，让每一天都更加高效
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/login">

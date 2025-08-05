@@ -51,17 +51,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-gray-50/90">
       <Navbar user={user} />
       <div className="max-w-4xl mx-auto py-8 px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            欢迎使用任务时间追踪器
-          </h1>
-          <p className="text-gray-600">
-            开始记录你的任务和花费的时间吧
-          </p>
-        </div>
+                        <div className="text-center mb-8">
+                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 mb-2">
+                    🐶 欢迎来到 PuppyHabits
+                  </h1>
+                  <p className="text-gray-600">
+                    跟随小狗一起培养好习惯，开始记录你的任务和时间吧
+                  </p>
+                </div>
 
         <TaskForm onTaskAdded={handleTaskAdded} />
         
