@@ -29,12 +29,8 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('请先登录')
 
-      // Extract category from task name (simple implementation)
-      const taskCategory = taskName.toLowerCase().includes('学习') ? '学习' :
-                          taskName.toLowerCase().includes('工作') ? '工作' :
-                          taskName.toLowerCase().includes('运动') ? '运动' :
-                          taskName.toLowerCase().includes('阅读') ? '阅读' :
-                          '其他'
+      // Use task name as category directly
+      const taskCategory = taskName.trim()
 
       const { error } = await supabase.from('tasks').insert({
         user_id: user.id,
