@@ -59,13 +59,58 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
     // 清理之前的背景图片缓存
     const keys = Object.keys(localStorage)
     keys.forEach(key => {
-      if (key.startsWith('website-background-') || (key === 'website-background' && localStorage.getItem(key)?.startsWith('url('))) {
+      if (key.startsWith('website-background') && localStorage.getItem(key)?.includes('data:image')) {
         localStorage.removeItem(key)
       }
     })
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      
+      img.onload = () => {
+        // 计算压缩后的尺寸，限制最大宽度为1920px
+        const maxWidth = 1920
+        const maxHeight = 1080
+        let { width, height } = img
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+        
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height
+          height = maxHeight
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // 绘制压缩后的图片
+        ctx?.drawImage(img, 0, 0, width, height)
+        
+        // 输出为JPEG格式，质量0.8
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        
+        // 检查压缩后的大小，如果还是太大就降低质量
+        if (compressedDataUrl.length > 1024 * 1024) { // 1MB
+          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.6)
+          resolve(finalDataUrl)
+        } else {
+          resolve(compressedDataUrl)
+        }
+      }
+      
+      img.onerror = () => reject(new Error('图片加载失败'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       // 检查文件类型
@@ -80,37 +125,73 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
         return
       }
 
-      // 清理之前的背景缓存
-      clearPreviousBackgrounds()
-
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string
-        setSelectedImage(imageUrl)
+      try {
+        // 清理之前的背景缓存
+        clearPreviousBackgrounds()
+        
+        // 压缩图片
+        const compressedImage = await compressImage(file)
+        setSelectedImage(compressedImage)
+        
+        // 检查压缩后的大小
+        const sizeInMB = (compressedImage.length * 0.75 / 1024 / 1024).toFixed(2)
+        console.log(`图片压缩完成，大小: ${sizeInMB}MB`)
+        
+      } catch (error) {
+        console.error('Image compression failed:', error)
+        alert('图片处理失败，请重试或选择其他图片')
       }
-      reader.readAsDataURL(file)
     }
     // 清除文件输入框的值，允许重复选择同一文件
     event.target.value = ''
   }
 
   const applyBackground = (backgroundValue: string | null) => {
-    if (backgroundValue) {
-      localStorage.setItem('website-background', backgroundValue)
-      document.body.style.background = backgroundValue
-      document.body.style.backgroundSize = backgroundValue.startsWith('url(') ? 'cover' : 'auto'
-      document.body.style.backgroundPosition = 'center'
-      document.body.style.backgroundRepeat = 'no-repeat'
-      document.body.style.backgroundAttachment = 'fixed'
-    } else {
-      localStorage.removeItem('website-background')
-      document.body.style.background = ''
-      document.body.style.backgroundSize = ''
-      document.body.style.backgroundPosition = ''
-      document.body.style.backgroundRepeat = ''
-      document.body.style.backgroundAttachment = ''
+    try {
+      if (backgroundValue) {
+        // 检查localStorage容量
+        if (backgroundValue.includes('data:image')) {
+          const sizeInBytes = new Blob([backgroundValue]).size
+          const sizeInMB = (sizeInBytes / 1024 / 1024).toFixed(2)
+          console.log(`尝试存储背景，大小: ${sizeInMB}MB`)
+          
+          if (sizeInBytes > 2 * 1024 * 1024) { // 2MB
+            throw new Error('图片太大，请选择更小的图片')
+          }
+        }
+        
+        localStorage.setItem('website-background', backgroundValue)
+        document.body.style.background = backgroundValue
+        document.body.style.backgroundSize = backgroundValue.startsWith('url(') ? 'cover' : 'auto'
+        document.body.style.backgroundPosition = 'center'
+        document.body.style.backgroundRepeat = 'no-repeat'
+        document.body.style.backgroundAttachment = 'fixed'
+      } else {
+        localStorage.removeItem('website-background')
+        document.body.style.background = ''
+        document.body.style.backgroundSize = ''
+        document.body.style.backgroundPosition = ''
+        document.body.style.backgroundRepeat = ''
+        document.body.style.backgroundAttachment = ''
+      }
+      setCurrentBackground(backgroundValue)
+    } catch (error) {
+      console.error('Failed to apply background:', error)
+      
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        // localStorage容量超限
+        alert('存储空间不足，请清理浏览器缓存或选择更小的图片')
+        // 尝试清理所有背景缓存
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('background')) {
+            localStorage.removeItem(key)
+          }
+        })
+      } else {
+        alert(error instanceof Error ? error.message : '应用背景失败')
+      }
+      throw error
     }
-    setCurrentBackground(backgroundValue)
   }
 
   const handleApplyImage = async () => {
@@ -186,7 +267,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                 <div className="space-y-2">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto" />
                   <p className="text-gray-600">点击上传背景图片</p>
-                  <p className="text-sm text-gray-400">支持 JPG、PNG 格式，文件大小不超过 15MB</p>
+                  <p className="text-sm text-gray-400">支持 JPG、PNG 格式，文件大小不超过 15MB<br/>图片将自动压缩优化以节省存储空间</p>
                 </div>
                 <Button
                   variant="outline"
@@ -281,7 +362,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
             <span>重置为默认</span>
           </Button>
           <div className="text-sm text-gray-500">
-            背景设置会保存在本地浏览器中
+            背景设置会保存在本地浏览器中，自动压缩优化
           </div>
         </div>
       </div>
