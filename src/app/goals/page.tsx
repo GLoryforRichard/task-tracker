@@ -21,7 +21,7 @@ export default function GoalsPage() {
           router.push('/login')
           return
         }
-        setUser(user)
+        setUser({ email: user.email || '' })
       } catch (error) {
         console.error('Error checking user:', error)
         router.push('/login')
