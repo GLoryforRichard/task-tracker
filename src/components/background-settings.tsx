@@ -12,6 +12,7 @@ interface BackgroundSettingsProps {
 export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [currentBackground, setCurrentBackground] = useState<string | null>(null)
+  const [isApplying, setIsApplying] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 预设背景选项
@@ -54,6 +55,16 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
     setCurrentBackground(savedBackground)
   }, [])
 
+  const clearPreviousBackgrounds = () => {
+    // 清理之前的背景图片缓存
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith('website-background-') || (key === 'website-background' && localStorage.getItem(key)?.startsWith('url('))) {
+        localStorage.removeItem(key)
+      }
+    })
+  }
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -69,6 +80,9 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
         return
       }
 
+      // 清理之前的背景缓存
+      clearPreviousBackgrounds()
+
       const reader = new FileReader()
       reader.onload = (e) => {
         const imageUrl = e.target?.result as string
@@ -76,6 +90,8 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
       }
       reader.readAsDataURL(file)
     }
+    // 清除文件输入框的值，允许重复选择同一文件
+    event.target.value = ''
   }
 
   const applyBackground = (backgroundValue: string | null) => {
@@ -97,11 +113,32 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
     setCurrentBackground(backgroundValue)
   }
 
-  const handleApplyImage = () => {
-    if (selectedImage) {
-      const imageUrl = `url(${selectedImage})`
-      applyBackground(imageUrl)
-      setSelectedImage(null)
+  const handleApplyImage = async () => {
+    if (selectedImage && !isApplying) {
+      setIsApplying(true)
+      try {
+        const imageUrl = `url(${selectedImage})`
+        applyBackground(imageUrl)
+        setSelectedImage(null)
+        // 显示成功反馈
+        const button = document.activeElement as HTMLButtonElement
+        if (button) {
+          const originalText = button.textContent
+          button.textContent = '应用成功!'
+          button.className = button.className.replace('bg-blue-600', 'bg-green-600')
+          setTimeout(() => {
+            if (button.textContent === '应用成功!') {
+              button.textContent = originalText
+              button.className = button.className.replace('bg-green-600', 'bg-blue-600')
+            }
+          }, 2000)
+        }
+      } catch (error) {
+        console.error('Error applying background:', error)
+        alert('应用背景失败，请重试')
+      } finally {
+        setTimeout(() => setIsApplying(false), 1000)
+      }
     }
   }
 
@@ -172,8 +209,19 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                       <span className="text-white text-sm font-medium">预览效果</span>
                     </div>
                   </div>
-                  <Button onClick={handleApplyImage} className="w-full">
-                    应用此背景
+                  <Button 
+                    onClick={handleApplyImage} 
+                    disabled={isApplying}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {isApplying ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        应用中...
+                      </div>
+                    ) : (
+                      '应用此背景'
+                    )}
                   </Button>
                 </div>
               )}
@@ -187,12 +235,22 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
               {presetBackgrounds.map((bg) => (
                 <div
                   key={bg.name}
-                  className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 transform hover:scale-105 ${
                     currentBackground === bg.value
-                      ? 'border-blue-500 ring-2 ring-blue-200'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
+                      : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
                   }`}
-                  onClick={() => applyBackground(bg.value)}
+                  onClick={() => {
+                    applyBackground(bg.value)
+                    // 简单的点击反馈
+                    const element = document.activeElement as HTMLElement
+                    if (element) {
+                      element.style.transform = 'scale(0.95)'
+                      setTimeout(() => {
+                        element.style.transform = ''
+                      }, 150)
+                    }
+                  }}
                 >
                   <div
                     className="h-20 w-full"
@@ -217,7 +275,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
           <Button
             variant="outline"
             onClick={handleReset}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 hover:bg-gray-100 transition-colors duration-200"
           >
             <RotateCcw className="h-4 w-4" />
             <span>重置为默认</span>
