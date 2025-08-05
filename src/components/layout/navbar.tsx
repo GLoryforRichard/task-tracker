@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, Calendar, BarChart3, Target, Plus } from 'lucide-react'
+import { LogOut, User, Calendar, BarChart3, Target, Plus, Palette } from 'lucide-react'
+import { BackgroundSettings } from '@/components/background-settings'
 import { createClient } from '@/utils/supabase/client'
 
 interface NavbarProps {
@@ -11,6 +13,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ user }: NavbarProps) {
+  const [isBackgroundSettingsOpen, setIsBackgroundSettingsOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -57,6 +60,16 @@ export function Navbar({ user }: NavbarProps) {
                 目标
               </Button>
             </Link>
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsBackgroundSettingsOpen(true)}
+              title="背景设置"
+            >
+              <Palette className="h-4 w-4 mr-1" />
+              背景
+            </Button>
 
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4" />
@@ -72,6 +85,12 @@ export function Navbar({ user }: NavbarProps) {
           </div>
         </div>
       </div>
+      
+      {/* 背景设置弹窗 */}
+      <BackgroundSettings 
+        isOpen={isBackgroundSettingsOpen}
+        onClose={() => setIsBackgroundSettingsOpen(false)}
+      />
     </nav>
   )
 }
