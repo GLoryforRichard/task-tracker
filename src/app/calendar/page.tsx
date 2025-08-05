@@ -42,7 +42,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/90">
+    <div className="min-h-screen">
       <Navbar user={user} />
       <div className="max-w-7xl mx-auto py-8 px-4">
         <div className="text-center mb-8">

@@ -51,9 +51,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/90">
+    <div className="min-h-screen">
       <Navbar user={user} />
-      <div className="max-w-4xl mx-auto py-8 px-4">
+                    <div className="max-w-4xl mx-auto py-8 px-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
                         <div className="text-center mb-8">
                   <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 mb-2">
                     🐶 欢迎来到 PuppyHabits
@@ -67,9 +68,10 @@ export default function Dashboard() {
         
         {/* 历史记录区域 */}
         <div className="mt-8">
-          <TaskHistory refreshTrigger={refreshTrigger} />
-        </div>
-      </div>
+                          <TaskHistory refreshTrigger={refreshTrigger} />
+                </div>
+              </div>
+            </div>
     </div>
   )
 }

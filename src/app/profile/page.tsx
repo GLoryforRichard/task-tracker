@@ -153,7 +153,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/90">
+    <div className="min-h-screen">
       <Navbar user={user} />
       <div className="max-w-2xl mx-auto py-8 px-4">
         {/* 页面头部 */}
@@ -171,7 +171,7 @@ export default function ProfilePage() {
         </div>
 
         {/* 用户资料卡片 */}
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+        <div className="bg-white/85 backdrop-blur-sm rounded-lg shadow-lg p-8 space-y-6">
           
           {/* 头像设置 */}
           <div className="text-center">

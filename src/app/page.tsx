@@ -4,8 +4,9 @@ import { Calendar, Clock, Target, TrendingUp } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/90 to-indigo-100/90">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-xl">
@@ -81,7 +82,7 @@ export default function Home() {
         </div>
 
         <div className="mt-16 text-center">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold mb-4">设定目标，持续进步</h2>
             <p className="text-gray-600 mb-6">
               为每个任务类别设定每周目标，追踪进度，保持动力
@@ -91,6 +92,7 @@ export default function Home() {
               <span className="font-medium">学习 30/40 小时</span>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
