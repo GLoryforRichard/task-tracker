@@ -94,11 +94,11 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
       {/* 统计信息 */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">任务记录汇总</h2>
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50/60 backdrop-blur-sm rounded-lg p-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-600">总记录数：</span>
@@ -123,7 +123,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         ) : (
           <div className="overflow-hidden">
             {/* 表头 */}
-            <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-50 rounded-t-lg border-b text-sm font-medium text-gray-600">
+                               <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
               <div>时长</div>
@@ -136,9 +136,9 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
               {tasks.map((task, index) => (
                 <div 
                   key={task.id}
-                  className={`grid grid-cols-5 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                  }`}
+                                          className={`grid grid-cols-5 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
+                          index % 2 === 0 ? 'bg-white/20' : 'bg-gray-50/30'
+                        }`}
                 >
                   <div className="text-sm text-gray-600">
                     {format(new Date(task.date), 'MM/dd')}
@@ -168,7 +168,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
             </div>
             
             {/* 底部汇总 */}
-            <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-100 rounded-b-lg border-t font-medium text-sm">
+                               <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-100/40 backdrop-blur-sm rounded-b-lg border-t font-medium text-sm">
               <div className="text-gray-600">总计</div>
               <div className="text-gray-600">{tasks.length} 条记录</div>
               <div className="text-gray-900">{totalHours} 小时</div>
