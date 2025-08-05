@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
+        <div className="bg-white/0 backdrop-blur-sm rounded-3xl shadow-xl p-8">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-xl">

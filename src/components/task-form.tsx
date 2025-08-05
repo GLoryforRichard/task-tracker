@@ -58,7 +58,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6 bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg">
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6 bg-white/0 backdrop-blur-sm p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-center mb-6">记录今日任务</h2>
 
       <div className="space-y-2">
