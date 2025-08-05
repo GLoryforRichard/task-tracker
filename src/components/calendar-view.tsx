@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { DayDetailModal } from '@/components/day-detail-modal'
 import { createClient } from '@/utils/supabase/client'
 
 interface Task {
@@ -13,6 +14,7 @@ interface Task {
   hours: number
   date: string
   reflection: string | null
+  created_at: string
 }
 
 interface CalendarViewProps {
@@ -22,6 +24,7 @@ interface CalendarViewProps {
 export function CalendarView({ onDateSelect }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [tasks, setTasks] = useState<Task[]>([])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   
   const supabase = createClient()
 
@@ -69,6 +72,15 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
     return dayTasks.reduce((total, task) => total + task.hours, 0)
   }
 
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date)
+    onDateSelect?.(date)
+  }
+
+  const handleCloseModal = () => {
+    setSelectedDate(null)
+  }
+
   const days = getDaysInMonth()
   const weekDays = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -114,7 +126,7 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
                 ${!isCurrentMonth ? 'text-gray-400 bg-gray-50' : ''}
                 ${isSameDay(day, new Date()) ? 'bg-blue-100' : ''}
               `}
-              onClick={() => onDateSelect?.(day)}
+              onClick={() => handleDayClick(day)}
             >
               <div className="text-sm font-medium mb-1">{format(day, 'd')}</div>
               
@@ -144,6 +156,13 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
           )
         })}
       </div>
+      
+      {/* 日期详情弹窗 */}
+      <DayDetailModal 
+        date={selectedDate}
+        tasks={selectedDate ? getTasksForDay(selectedDate) : []}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }
