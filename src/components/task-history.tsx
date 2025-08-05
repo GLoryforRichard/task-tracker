@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
+import { Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 
 interface Task {
@@ -50,6 +52,27 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
       setLoading(false)
     }
   }, [supabase])
+
+  const deleteTask = async (taskId: string) => {
+    if (!confirm('确定要删除这条任务记录吗？')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+
+      if (error) throw error
+
+      // 重新获取任务列表
+      await fetchTasks()
+    } catch (error) {
+      console.error('Error deleting task:', error)
+      alert('删除失败，请重试')
+    }
+  }
 
   useEffect(() => {
     fetchTasks()
@@ -100,11 +123,12 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         ) : (
           <div className="overflow-hidden">
             {/* 表头 */}
-            <div className="grid grid-cols-4 gap-4 py-3 px-4 bg-gray-50 rounded-t-lg border-b text-sm font-medium text-gray-600">
+            <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-50 rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
               <div>时长</div>
               <div>分类</div>
+              <div>操作</div>
             </div>
             
             {/* 任务列表 */}
@@ -112,7 +136,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
               {tasks.map((task, index) => (
                 <div 
                   key={task.id}
-                  className={`grid grid-cols-4 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                  className={`grid grid-cols-5 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                   }`}
                 >
@@ -128,15 +152,27 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                   <div className="text-sm text-gray-600 truncate">
                     {task.task_category}
                   </div>
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteTask(task.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
+                      title="删除记录"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
             
             {/* 底部汇总 */}
-            <div className="grid grid-cols-4 gap-4 py-3 px-4 bg-gray-100 rounded-b-lg border-t font-medium text-sm">
+            <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-100 rounded-b-lg border-t font-medium text-sm">
               <div className="text-gray-600">总计</div>
               <div className="text-gray-600">{tasks.length} 条记录</div>
               <div className="text-gray-900">{totalHours} 小时</div>
+              <div></div>
               <div></div>
             </div>
           </div>
