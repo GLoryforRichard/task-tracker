@@ -1,0 +1,147 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { format } from 'date-fns'
+import { createClient } from '@/utils/supabase/client'
+
+interface Task {
+  id: string
+  task_name: string
+  task_category: string
+  hours: number
+  date: string
+  reflection: string | null
+  created_at: string
+}
+
+interface TaskHistoryProps {
+  refreshTrigger?: number
+}
+
+export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalHours, setTotalHours] = useState(0)
+  
+  const supabase = createClient()
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .limit(10) // 显示最近10条记录
+
+      if (error) throw error
+      
+      setTasks(data || [])
+      
+      // 计算总时长
+      const total = (data || []).reduce((sum, task) => sum + task.hours, 0)
+      setTotalHours(total)
+    } catch (error) {
+      console.error('Error fetching tasks:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks, refreshTrigger])
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-300 rounded mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-4 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      {/* 统计信息 */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">任务记录汇总</h2>
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-600">总记录数：</span>
+              <span className="font-semibold">{tasks.length} 条</span>
+            </div>
+            <div>
+              <span className="text-gray-600">总时长：</span>
+              <span className="font-semibold">{totalHours} 小时</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 任务记录列表 */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">最近记录</h3>
+        
+        {tasks.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            还没有任务记录，快去添加第一条记录吧！
+          </div>
+        ) : (
+          <div className="overflow-hidden">
+            {/* 表头 */}
+            <div className="grid grid-cols-4 gap-4 py-3 px-4 bg-gray-50 rounded-t-lg border-b text-sm font-medium text-gray-600">
+              <div>日期</div>
+              <div>任务名称</div>
+              <div>时长</div>
+              <div>分类</div>
+            </div>
+            
+            {/* 任务列表 */}
+            <div className="max-h-96 overflow-y-auto">
+              {tasks.map((task, index) => (
+                <div 
+                  key={task.id}
+                  className={`grid grid-cols-4 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                  }`}
+                >
+                  <div className="text-sm text-gray-600">
+                    {format(new Date(task.date), 'MM/dd')}
+                  </div>
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {task.task_name}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {task.hours} 小时
+                  </div>
+                  <div className="text-sm text-gray-600 truncate">
+                    {task.task_category}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* 底部汇总 */}
+            <div className="grid grid-cols-4 gap-4 py-3 px-4 bg-gray-100 rounded-b-lg border-t font-medium text-sm">
+              <div className="text-gray-600">总计</div>
+              <div className="text-gray-600">{tasks.length} 条记录</div>
+              <div className="text-gray-900">{totalHours} 小时</div>
+              <div></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

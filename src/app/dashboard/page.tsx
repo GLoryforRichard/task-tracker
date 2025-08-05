@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/navbar'
 import { TaskForm } from '@/components/task-form'
+import { TaskHistory } from '@/components/task-history'
 import { createClient } from '@/utils/supabase/client'
 
 export default function Dashboard() {
   const [user, setUser] = useState<{ email: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const router = useRouter()
   
   const supabase = createClient()
@@ -35,7 +37,8 @@ export default function Dashboard() {
 
 
   const handleTaskAdded = () => {
-    // Refresh data or show success message
+    // 触发历史记录刷新
+    setRefreshTrigger(prev => prev + 1)
     console.log('Task added successfully!')
   }
 
@@ -61,6 +64,11 @@ export default function Dashboard() {
         </div>
 
         <TaskForm onTaskAdded={handleTaskAdded} />
+        
+        {/* 历史记录区域 */}
+        <div className="mt-8">
+          <TaskHistory refreshTrigger={refreshTrigger} />
+        </div>
       </div>
     </div>
   )
