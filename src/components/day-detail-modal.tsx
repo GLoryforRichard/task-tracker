@@ -40,7 +40,7 @@ export function DayDetailModal({ date, tasks, onClose }: DayDetailModalProps) {
   const totalHours = tasks.reduce((sum, task) => sum + task.hours, 0)
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div 
         className={`bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden transform transition-all duration-150 ${
           isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'

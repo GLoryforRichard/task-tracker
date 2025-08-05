@@ -63,9 +63,9 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
         return
       }
 
-      // 检查文件大小 (限制为5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('图片文件不能超过5MB')
+      // 检查文件大小 (限制为15MB)
+      if (file.size > 15 * 1024 * 1024) {
+        alert('图片文件不能超过15MB')
         return
       }
 
@@ -113,7 +113,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
         {/* 头部 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -149,7 +149,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                 <div className="space-y-2">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto" />
                   <p className="text-gray-600">点击上传背景图片</p>
-                  <p className="text-sm text-gray-400">支持 JPG、PNG 格式，文件大小不超过 5MB</p>
+                  <p className="text-sm text-gray-400">支持 JPG、PNG 格式，文件大小不超过 15MB</p>
                 </div>
                 <Button
                   variant="outline"
@@ -168,7 +168,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                       alt="预览"
                       className="w-full h-32 object-cover rounded-lg"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
                       <span className="text-white text-sm font-medium">预览效果</span>
                     </div>
                   </div>
@@ -198,7 +198,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                     className="h-20 w-full"
                     style={{ background: bg.preview }}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <span className="text-white text-sm font-medium">{bg.name}</span>
                   </div>
                   {currentBackground === bg.value && (
