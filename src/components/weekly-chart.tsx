@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Button } from '@/components/ui/button'
@@ -31,13 +31,13 @@ export function WeeklyChart() {
 
   useEffect(() => {
     fetchTasks()
-  }, [currentWeek])
+  }, [fetchTasks])
 
   useEffect(() => {
     processChartData()
-  }, [tasks, currentWeek])
+  }, [processChartData])
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -59,9 +59,9 @@ export function WeeklyChart() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentWeek, supabase])
 
-  const processChartData = () => {
+  const processChartData = useCallback(() => {
     const weekStart = startOfWeek(currentWeek)
     const weekEnd = endOfWeek(currentWeek)
     const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
@@ -92,7 +92,7 @@ export function WeeklyChart() {
     })
 
     setChartData(data)
-  }
+  }, [currentWeek, tasks])
 
   const getCategories = () => {
     return Array.from(new Set(tasks.map(task => task.task_category)))

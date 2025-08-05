@@ -45,7 +45,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login failed:', error)
-      setError((error as any).message || '登录失败，请重试')
+      setError(error instanceof Error ? error.message : '登录失败，请重试')
     } finally {
       setLoading(false)
     }

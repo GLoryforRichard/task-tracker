@@ -49,7 +49,7 @@ export default function RegisterPage() {
       router.refresh()
     } catch (error) {
       console.error('Registration failed:', error)
-      setError((error as any).message || '注册失败，请重试')
+      setError(error instanceof Error ? error.message : '注册失败，请重试')
     } finally {
       setLoading(false)
     }

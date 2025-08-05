@@ -31,7 +31,7 @@ export default function GoalsPage() {
     }
     
     checkUser()
-  }, [router])
+  }, [router, supabase.auth])
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen">加载中...</div>

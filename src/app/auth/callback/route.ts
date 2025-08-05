@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             try {
-              cookiesToSet.forEach(({ name, value, options }) =>
+              cookiesToSet.forEach(({ name, value }) =>
                 cookieStore.set(name, value)
               )
             } catch (error) {

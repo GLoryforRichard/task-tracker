@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,15 +22,14 @@ interface CalendarViewProps {
 export function CalendarView({ onDateSelect }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
   
   const supabase = createClient()
 
   useEffect(() => {
     fetchTasks()
-  }, [currentDate])
+  }, [fetchTasks])
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -49,10 +48,8 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
       setTasks(data || [])
     } catch (error) {
       console.error('Error fetching tasks:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [currentDate, supabase])
 
   const getDaysInMonth = () => {
     const monthStart = startOfMonth(currentDate)

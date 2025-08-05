@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,9 +33,9 @@ export function WeeklyGoals() {
 
   useEffect(() => {
     fetchGoalsAndStats()
-  }, [currentWeek])
+  }, [fetchGoalsAndStats])
 
-  const fetchGoalsAndStats = async () => {
+  const fetchGoalsAndStats = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -103,7 +103,7 @@ export function WeeklyGoals() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentWeek, supabase])
 
   const addGoal = async () => {
     if (!newCategory || !newTargetHours) return
