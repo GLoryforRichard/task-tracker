@@ -31,10 +31,6 @@ export function WeeklyGoals() {
   
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchGoalsAndStats()
-  }, [fetchGoalsAndStats])
-
   const fetchGoalsAndStats = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -104,6 +100,10 @@ export function WeeklyGoals() {
       setLoading(false)
     }
   }, [currentWeek, supabase])
+
+  useEffect(() => {
+    fetchGoalsAndStats()
+  }, [fetchGoalsAndStats])
 
   const addGoal = async () => {
     if (!newCategory || !newTargetHours) return

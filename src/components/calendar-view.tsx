@@ -25,10 +25,6 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
   
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchTasks()
-  }, [fetchTasks])
-
   const fetchTasks = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -50,6 +46,10 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
       console.error('Error fetching tasks:', error)
     }
   }, [currentDate, supabase])
+
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
 
   const getDaysInMonth = () => {
     const monthStart = startOfMonth(currentDate)

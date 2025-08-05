@@ -29,14 +29,6 @@ export function WeeklyChart() {
   
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchTasks()
-  }, [fetchTasks])
-
-  useEffect(() => {
-    processChartData()
-  }, [processChartData])
-
   const fetchTasks = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -93,6 +85,14 @@ export function WeeklyChart() {
 
     setChartData(data)
   }, [currentWeek, tasks])
+
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
+
+  useEffect(() => {
+    processChartData()
+  }, [processChartData])
 
   const getCategories = () => {
     return Array.from(new Set(tasks.map(task => task.task_category)))
