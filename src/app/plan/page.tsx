@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/navbar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/utils/supabase/client'
-import { Calendar, Target, Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
+import { Target, Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
 interface Plan {
@@ -172,15 +172,16 @@ export default function PlanPage() {
     return null
   }
 
-  return (
-    <div className="min-h-screen">
+return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar user={user} />
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 mb-2">
-            🎯 明确计划
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        {/* 头部标题区域 */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            📋 我的计划
           </h1>
-          <p className="text-gray-600">制定具体的计划，按日期安排任务和目标</p>
+          <p className="text-gray-600 text-lg">制定目标，规划时间，实现理想</p>
         </div>
 
         {showCreatePlan ? (
@@ -207,92 +208,119 @@ export default function PlanPage() {
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* 计划列表 */}
-            <div className="lg:col-span-1">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">我的计划</h2>
-                  <Button
-                    onClick={() => setShowCreatePlan(true)}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    新建
-                  </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* 左侧：计划列表 */}
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-900">计划列表</h2>
+                    <Button
+                      onClick={() => setShowCreatePlan(true)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                
+                <div className="max-h-[600px] overflow-y-auto">
                   {plans.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>还没有计划</p>
-                      <p className="text-sm">点击&ldquo;新建&rdquo;开始制定</p>
+                    <div className="p-8 text-center">
+                      <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-500 mb-2">暂无计划</p>
+                      <p className="text-sm text-gray-400">创建你的第一个计划吧</p>
                     </div>
                   ) : (
-                    plans.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors border ${
-                          selectedPlan?.id === plan.id
-                            ? 'bg-blue-50 border-blue-200'
-                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                        }`}
-                        onClick={() => selectPlan(plan)}
-                      >
-                        <h3 className="font-medium text-gray-900 truncate mb-1">
-                          {plan.title}
-                        </h3>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(plan.status)}`}>
-                            {getStatusText(plan.status)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {format(parseISO(plan.start_date), 'MM/dd')} - {format(parseISO(plan.end_date), 'MM/dd')}
-                        </p>
-                        {plan.description && (
-                          <p className="text-sm text-gray-500 line-clamp-2">
-                            {plan.description}
-                          </p>
-                        )}
-                      </div>
-                    ))
+                    <div className="divide-y divide-gray-100">
+                      {plans.map((plan) => {
+                        const itemsCount = planItems.filter(item => item.plan_id === plan.id).length
+                        const completedCount = planItems.filter(item => item.plan_id === plan.id && item.completed).length
+                        const progress = itemsCount > 0 ? Math.round((completedCount / itemsCount) * 100) : 0
+                        
+                        return (
+                          <div
+                            key={plan.id}
+                            className={`p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                              selectedPlan?.id === plan.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                            }`}
+                            onClick={() => selectPlan(plan)}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-medium text-gray-900 text-sm leading-tight">
+                                {plan.title}
+                              </h3>
+                              <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(plan.status)}`}>
+                                {getStatusText(plan.status)}
+                              </span>
+                            </div>
+                            
+                            {plan.description && (
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                                {plan.description}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span>
+                                {format(parseISO(plan.start_date), 'MM/dd')} - {format(parseISO(plan.end_date), 'MM/dd')}
+                              </span>
+                              <span>{itemsCount} 项任务</span>
+                            </div>
+                            
+                            {itemsCount > 0 && (
+                              <div className="mt-2">
+                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                  <div 
+                                    className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${progress}%` }}
+                                  ></div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">{progress}% 完成</p>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* 欢迎界面 */}
-            <div className="lg:col-span-2">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-                <div className="text-center py-20">
-                  <Target className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">
-                    选择一个计划或创建新计划
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    在左侧选择现有计划进行管理，或创建新的计划开始规划
-                  </p>
-                  <div className="flex items-center justify-center space-x-4">
+            {/* 右侧：计划详情 */}
+            <div className="lg:col-span-8">
+              {selectedPlan ? (
+                <PlanEditor
+                  plan={selectedPlan}
+                  items={planItems}
+                  onUpdate={() => {
+                    fetchPlans()
+                    fetchPlanItems(selectedPlan.id)
+                  }}
+                  onClose={() => {
+                    setSelectedPlan(null)
+                  }}
+                />
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+                  <div className="text-center">
+                    <Target className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">开始规划你的时间</h3>
+                    <p className="text-gray-600 mb-6">
+                      选择一个计划查看详情，或创建新的计划开始制定你的目标
+                    </p>
                     <Button
                       onClick={() => setShowCreatePlan(true)}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       创建新计划
                     </Button>
-                    <Button
-                      onClick={() => setShowCreatePlan(true)}
-                      variant="outline"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      按日期计划
-                    </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -489,69 +517,65 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
     }
   }
 
-  return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold">{plan.title}</h2>
-          <p className="text-gray-600">
-            {format(parseISO(plan.start_date), 'yyyy年MM月dd日')} - {format(parseISO(plan.end_date), 'yyyy年MM月dd日')}
-          </p>
+return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-1">{plan.title}</h2>
+            <p className="text-gray-600">
+              {format(parseISO(plan.start_date), 'yyyy年MM月dd日')} - {format(parseISO(plan.end_date), 'yyyy年MM月dd日')}
+            </p>
+          </div>
+          <Button onClick={onClose} variant="ghost" size="sm">
+            返回
+          </Button>
         </div>
-        <Button onClick={onClose} variant="outline">
-          关闭
-        </Button>
+        {plan.description && (
+          <p className="text-gray-700 mt-2">{plan.description}</p>
+        )}
       </div>
 
-      {plan.description && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-gray-700">{plan.description}</p>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">计划任务</h3>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">任务清单</h3>
           <Button
             onClick={() => setShowAddItem(!showAddItem)}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            添加任务
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
-
+        
         {showAddItem && (
-          <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-            <Input
-              value={newItemTitle}
-              onChange={(e) => setNewItemTitle(e.target.value)}
-              placeholder="输入任务标题..."
-            />
-            <div className="flex items-center space-x-3">
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-3">
               <Input
-                type="date"
-                value={newItemDate}
-                onChange={(e) => setNewItemDate(e.target.value)}
-                className="flex-1"
+                value={newItemTitle}
+                onChange={(e) => setNewItemTitle(e.target.value)}
+                placeholder="输入任务标题..."
               />
-              <Button onClick={addPlanItem} size="sm">
-                添加
-              </Button>
-              <Button onClick={() => setShowAddItem(false)} variant="outline" size="sm">
-                取消
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="date"
+                  value={newItemDate}
+                  onChange={(e) => setNewItemDate(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={addPlanItem} size="sm">添加</Button>
+                <Button onClick={() => setShowAddItem(false)} variant="outline" size="sm">取消</Button>
+              </div>
             </div>
           </div>
         )}
-
+        
         <div className="space-y-2">
           {items.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>还没有任务</p>
-              <p className="text-sm">点击&ldquo;添加任务&rdquo;开始制定具体计划</p>
+            <div className="text-center py-12">
+              <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500">暂无任务</p>
+              <p className="text-sm text-gray-400 mt-1">添加任务开始执行计划</p>
             </div>
           ) : (
             items.map((item) => (
