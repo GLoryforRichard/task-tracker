@@ -48,10 +48,10 @@ export function WeeklyGoals() {
 
       if (goalsError) throw goalsError
 
-      // Fetch actual task hours for this week
+      // Fetch actual task hours for this week - 包括关联到weekly_goal_id的任务
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('task_category, hours')
+        .select('task_category, hours, weekly_goal_id')
         .eq('user_id', user.id)
         .gte('date', weekStart)
         .lt('date', weekEnd)

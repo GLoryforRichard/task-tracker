@@ -173,6 +173,7 @@ export type Database = {
           hours: number
           date: string
           reflection: string | null
+          weekly_goal_id: string | null
           created_at: string
           updated_at: string
         }
@@ -184,6 +185,7 @@ export type Database = {
           hours: number
           date: string
           reflection?: string | null
+          weekly_goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -195,6 +197,7 @@ export type Database = {
           hours?: number
           date?: string
           reflection?: string | null
+          weekly_goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -204,6 +207,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_weekly_goal_id_fkey"
+            columns: ["weekly_goal_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_goals"
             referencedColumns: ["id"]
           }
         ]

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { format } from 'date-fns'
+import { useState, useEffect } from 'react'
+import { format, startOfWeek } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,14 +11,47 @@ interface TaskFormProps {
   onTaskAdded?: () => void
 }
 
+interface WeeklyGoal {
+  id: string
+  task_category: string
+  target_hours: number
+}
+
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [taskName, setTaskName] = useState('')
   const [hours, setHours] = useState('')
   const [reflection, setReflection] = useState('')
+  const [weeklyGoalId, setWeeklyGoalId] = useState<string>('')
+  const [weeklyGoals, setWeeklyGoals] = useState<WeeklyGoal[]>([])
   const [loading, setLoading] = useState(false)
   
   const supabase = createClient()
+
+  useEffect(() => {
+    const fetchWeeklyGoals = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const weekStart = format(startOfWeek(new Date(date)), 'yyyy-MM-dd')
+        
+        const { data: goalsData, error: goalsError } = await supabase
+          .from('weekly_goals')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('week_start', weekStart)
+
+        if (goalsError) throw goalsError
+
+        setWeeklyGoals(goalsData || [])
+      } catch (error) {
+        console.error('Error fetching weekly goals:', error)
+      }
+    }
+
+    fetchWeeklyGoals()
+  }, [date, supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,6 +72,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         hours: parseFloat(hours),
         date: date,
         reflection: reflection || null,
+        weekly_goal_id: weeklyGoalId || null,
       })
 
       if (error) throw error
@@ -47,6 +81,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       setTaskName('')
       setHours('')
       setReflection('')
+      setWeeklyGoalId('')
 
       onTaskAdded?.()
     } catch (error) {
@@ -93,6 +128,22 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
           onChange={(e) => setHours(e.target.value)}
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">选择目标分类（可选）</label>
+        <select
+          value={weeklyGoalId}
+          onChange={(e) => setWeeklyGoalId(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">不属于任何目标分类</option>
+          {weeklyGoals.map((goal) => (
+            <option key={goal.id} value={goal.id}>
+              {goal.task_category}（目标: {goal.target_hours}小时）
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">
