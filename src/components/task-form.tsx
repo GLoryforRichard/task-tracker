@@ -62,8 +62,17 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('请先登录')
 
-      // Use task name as category directly
-      const taskCategory = taskName.trim()
+      // 根据选择的目标确定任务分类
+      let taskCategory = taskName.trim()
+      const selectedWeeklyGoalId = weeklyGoalId || null
+
+      // 如果选择了目标，使用目标的分类
+      if (weeklyGoalId) {
+        const selectedGoal = weeklyGoals.find(goal => goal.id === weeklyGoalId)
+        if (selectedGoal) {
+          taskCategory = selectedGoal.task_category
+        }
+      }
 
       const { error } = await supabase.from('tasks').insert({
         user_id: user.id,
@@ -72,7 +81,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         hours: parseFloat(hours),
         date: date,
         reflection: reflection || null,
-        weekly_goal_id: weeklyGoalId || null,
+        weekly_goal_id: selectedWeeklyGoalId,
       })
 
       if (error) throw error
