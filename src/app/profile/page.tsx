@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null)
+  const [messageBoard, setMessageBoard] = useState('')
+  const [savedMessageBoard, setSavedMessageBoard] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   
@@ -50,6 +52,8 @@ export default function ProfilePage() {
           avatar: profileData.avatar || null
         })
         setTempNickname(profileData.nickname || '')
+        setMessageBoard(profileData.messageBoard || '')
+        setSavedMessageBoard(profileData.messageBoard || '')
       } else {
         // 初始化默认资料
         const defaultProfile = {
@@ -59,6 +63,8 @@ export default function ProfilePage() {
         }
         setProfile(defaultProfile)
         setTempNickname(defaultProfile.nickname)
+        setMessageBoard('')
+        setSavedMessageBoard('')
       }
     } catch (error) {
       console.error('Error loading user profile:', error)
@@ -113,11 +119,13 @@ export default function ProfilePage() {
       // 保存到 localStorage
       localStorage.setItem(`user-profile-${user.id}`, JSON.stringify({
         nickname: updatedProfile.nickname,
-        avatar: updatedProfile.avatar
+        avatar: updatedProfile.avatar,
+        messageBoard: messageBoard
       }))
 
       setProfile(updatedProfile)
       setSelectedAvatar(null)
+      setSavedMessageBoard(messageBoard)
       
       // 发送自定义事件通知其他组件更新
       window.dispatchEvent(new Event('profile-updated'))
@@ -257,6 +265,42 @@ export default function ProfilePage() {
               <p className="text-xs text-gray-500 mt-1">
                 昵称将在导航栏和其他地方显示，最多20个字符
               </p>
+            </div>
+          </div>
+
+          {/* 给自己的留言板 */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">给自己的留言板</h2>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                自我激励、提醒和小记录
+              </label>
+              <textarea
+                value={messageBoard}
+                onChange={(e) => setMessageBoard(e.target.value)}
+                placeholder="在这里给自己写些话吧...
+
+例如：
+- 今天要坚持锻炼身体
+- 记得保持乐观的心态
+- 不要给自己太大压力
+- 进步不一定要很大，但要持续"
+                rows={8}
+                maxLength={500}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+              />
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-xs text-gray-500">
+                  {messageBoard.length}/500 字符
+                </p>
+                {savedMessageBoard !== messageBoard && (
+                  <p className="text-xs text-orange-500">
+                    有未保存的修改
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

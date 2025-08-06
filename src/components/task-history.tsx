@@ -14,6 +14,7 @@ interface Task {
   date: string
   reflection: string | null
   created_at: string
+  categoryTotal?: number // 类别总耗时
 }
 
 interface TaskHistoryProps {
@@ -41,7 +42,27 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
 
       if (error) throw error
       
-      setTasks(data || [])
+      // 获取每个任务类别的总耗时
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('tasks')
+        .select('task_category, hours')
+        .eq('user_id', user.id)
+      
+      if (categoryError) throw categoryError
+      
+      // 计算每个类别的总时间
+      const categoryTotals: { [key: string]: number } = {}
+      categoryData?.forEach(task => {
+        categoryTotals[task.task_category] = (categoryTotals[task.task_category] || 0) + task.hours
+      })
+      
+      // 为每个任务添加类别总耗时
+      const tasksWithTotals = (data || []).map(task => ({
+        ...task,
+        categoryTotal: categoryTotals[task.task_category] || 0
+      }))
+      
+      setTasks(tasksWithTotals)
       
       // 计算总时长
       const total = (data || []).reduce((sum, task) => sum + task.hours, 0)
@@ -123,11 +144,12 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         ) : (
           <div className="overflow-hidden">
             {/* 表头 */}
-                               <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
+                               <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
               <div>时长</div>
               <div>分类</div>
+              <div>总耗时</div>
               <div>操作</div>
             </div>
             
@@ -136,7 +158,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
               {tasks.map((task, index) => (
                 <div 
                   key={task.id}
-                                          className={`grid grid-cols-5 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
+                                          className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
                           index % 2 === 0 ? 'bg-white/20' : 'bg-gray-50/30'
                         }`}
                 >
@@ -151,6 +173,9 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                   </div>
                   <div className="text-sm text-gray-600 truncate">
                     {task.task_category}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-blue-600">{task.categoryTotal}</span> 小时
                   </div>
                   <div className="flex items-center">
                     <Button
@@ -168,10 +193,11 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
             </div>
             
             {/* 底部汇总 */}
-                               <div className="grid grid-cols-5 gap-4 py-3 px-4 bg-gray-100/40 backdrop-blur-sm rounded-b-lg border-t font-medium text-sm">
+                               <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-100/40 backdrop-blur-sm rounded-b-lg border-t font-medium text-sm">
               <div className="text-gray-600">总计</div>
               <div className="text-gray-600">{tasks.length} 条记录</div>
               <div className="text-gray-900">{totalHours} 小时</div>
+              <div></div>
               <div></div>
               <div></div>
             </div>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, Calendar, BarChart3, Target, Plus, Palette } from 'lucide-react'
+import { LogOut, User, Calendar, BarChart3, Target, Plus, Palette, FileText, BookOpen, MapPin } from 'lucide-react'
 import { BackgroundSettings } from '@/components/background-settings'
 import { Logo } from '@/components/logo'
 import { useUserProfile } from '@/hooks/use-user-profile'
@@ -59,6 +59,27 @@ export function Navbar({ user }: NavbarProps) {
               <Button variant="ghost" size="sm">
                 <Target className="h-4 w-4 mr-1" />
                 目标
+              </Button>
+            </Link>
+            
+            <Link href="/notes">
+              <Button variant="ghost" size="sm">
+                <FileText className="h-4 w-4 mr-1" />
+                笔记
+              </Button>
+            </Link>
+            
+            <Link href="/journal">
+              <Button variant="ghost" size="sm">
+                <BookOpen className="h-4 w-4 mr-1" />
+                日记
+              </Button>
+            </Link>
+            
+            <Link href="/plan">
+              <Button variant="ghost" size="sm">
+                <MapPin className="h-4 w-4 mr-1" />
+                计划
               </Button>
             </Link>
             
