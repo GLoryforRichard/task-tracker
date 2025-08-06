@@ -51,7 +51,7 @@ export default function NotesPage() {
       if (!user) return
 
       // 先检查表是否存在，如果不存在则创建
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('notes')
         .select('*')
         .eq('user_id', user.id)
@@ -98,7 +98,7 @@ export default function NotesPage() {
 
       if (currentNote) {
         // 更新现有笔记
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('notes')
           .update({
             title: title.trim(),
@@ -110,7 +110,7 @@ export default function NotesPage() {
         if (error) throw error
       } else {
         // 创建新笔记
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('notes')
           .insert({
             user_id: user.id,
@@ -136,7 +136,7 @@ export default function NotesPage() {
     if (!window.confirm('确定要删除这条笔记吗？')) return
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('notes')
         .delete()
         .eq('id', noteId)

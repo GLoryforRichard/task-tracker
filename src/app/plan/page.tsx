@@ -14,8 +14,8 @@ interface Plan {
   title: string
   start_date: string
   end_date: string
-  description: string
-  status: 'planning' | 'in_progress' | 'completed' | 'cancelled'
+  description: string | null
+  status: string
   created_at: string
   updated_at: string
 }
@@ -24,7 +24,7 @@ interface PlanItem {
   id: string
   plan_id: string
   title: string
-  description: string
+  description: string | null
   date: string
   completed: boolean
   created_at: string
@@ -64,7 +64,7 @@ export default function PlanPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('plans')
         .select('*')
         .eq('user_id', user.id)
@@ -88,7 +88,7 @@ export default function PlanPage() {
 
   const fetchPlanItems = useCallback(async (planId: string) => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('plan_items')
         .select('*')
         .eq('plan_id', planId)
@@ -252,9 +252,11 @@ export default function PlanPage() {
                         <p className="text-sm text-gray-600 mb-2">
                           {format(parseISO(plan.start_date), 'MM/dd')} - {format(parseISO(plan.end_date), 'MM/dd')}
                         </p>
-                        <p className="text-sm text-gray-500 line-clamp-2">
-                          {plan.description}
-                        </p>
+                        {plan.description && (
+                          <p className="text-sm text-gray-500 line-clamp-2">
+                            {plan.description}
+                          </p>
+                        )}
                       </div>
                     ))
                   )}
@@ -325,7 +327,7 @@ function CreatePlanForm({ onSuccess, onCancel, defaultStartDate, defaultEndDate 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('请先登录')
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('plans')
         .insert({
           user_id: user.id,
@@ -435,7 +437,7 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('请先登录')
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('plan_items')
         .insert({
           plan_id: plan.id,
@@ -457,7 +459,7 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
 
   const toggleItemComplete = async (item: PlanItem) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('plan_items')
         .update({ completed: !item.completed })
         .eq('id', item.id)
@@ -474,7 +476,7 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
     if (!window.confirm('确定要删除这个任务吗？')) return
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('plan_items')
         .delete()
         .eq('id', itemId)

@@ -51,7 +51,7 @@ export default function JournalPage() {
       const monthStart = startOfMonth(currentDate)
       const monthEnd = endOfMonth(currentDate)
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
         .eq('user_id', user.id)
@@ -274,7 +274,7 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
 
       if (entry) {
         // 更新现有记录
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('journal_entries')
           .update({
             content: content.trim(),
@@ -285,7 +285,7 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
         if (error) throw error
       } else {
         // 创建新记录
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('journal_entries')
           .insert({
             user_id: user.id,
@@ -310,7 +310,7 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
     if (!entry || !window.confirm('确定要删除这条记录吗？')) return
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('journal_entries')
         .delete()
         .eq('id', entry.id)
