@@ -47,10 +47,10 @@ export default function CalendarPage() {
       <div className="max-w-7xl mx-auto py-8 px-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            日历视图
+            日历提醒
           </h1>
           <p className="text-gray-600">
-            查看每天的任务安排和时间分配
+            查看并管理每天的任务与提醒
           </p>
         </div>
 
