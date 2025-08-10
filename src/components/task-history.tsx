@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { createClient } from '@/utils/supabase/client'
 
 interface Task {
@@ -25,6 +26,8 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [totalHours, setTotalHours] = useState(0)
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [editingDate, setEditingDate] = useState<string>('')
   
   const supabase = createClient()
 
@@ -95,6 +98,34 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
     }
   }
 
+  const startEditDate = (task: Task) => {
+    setEditingTaskId(task.id)
+    setEditingDate(task.date)
+  }
+
+  const cancelEditDate = () => {
+    setEditingTaskId(null)
+    setEditingDate('')
+  }
+
+  const saveEditDate = async () => {
+    if (!editingTaskId || !editingDate) return
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ date: editingDate, updated_at: new Date().toISOString() })
+        .eq('id', editingTaskId)
+
+      if (error) throw error
+
+      await fetchTasks()
+      cancelEditDate()
+    } catch (error) {
+      console.error('Error updating task date:', error)
+      alert('更新日期失败，请重试')
+    }
+  }
+
   useEffect(() => {
     fetchTasks()
   }, [fetchTasks, refreshTrigger])
@@ -144,7 +175,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         ) : (
           <div className="overflow-hidden">
             {/* 表头 */}
-                               <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
+            <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
               <div>时长</div>
@@ -158,12 +189,21 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
               {tasks.map((task, index) => (
                 <div 
                   key={task.id}
-                                          className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
-                          index % 2 === 0 ? 'bg-white/20' : 'bg-gray-50/30'
-                        }`}
+                  className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
+                    index % 2 === 0 ? 'bg-white/20' : 'bg-gray-50/30'
+                  }`}
                 >
                   <div className="text-sm text-gray-600">
-                    {format(new Date(task.date), 'MM/dd')}
+                    {editingTaskId === task.id ? (
+                      <Input
+                        type="date"
+                        value={editingDate}
+                        onChange={(e) => setEditingDate(e.target.value)}
+                        className="h-8"
+                      />
+                    ) : (
+                      format(new Date(task.date), 'MM/dd')
+                    )}
                   </div>
                   <div className="text-sm font-medium text-gray-900 truncate">
                     {task.task_name}
@@ -177,7 +217,39 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-blue-600">{task.categoryTotal}</span> 小时
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-1">
+                    {editingTaskId === task.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={saveEditDate}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50 h-6 w-6 p-0"
+                          title="保存日期"
+                        >
+                          <Check className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={cancelEditDate}
+                          className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-6 w-6 p-0"
+                          title="取消编辑"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditDate(task)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-6 w-6 p-0"
+                        title="编辑日期"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
