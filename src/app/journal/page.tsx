@@ -217,6 +217,7 @@ export default function JournalPage() {
           <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
             {showEditor && selectedDate ? (
               <JournalEditor
+                key={format(selectedDate, 'yyyy-MM-dd')}
                 date={selectedDate}
                 entry={getEntry(selectedDate)}
                 onSave={fetchJournalEntries}
@@ -258,6 +259,11 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
   const [content, setContent] = useState(entry?.content || '')
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
+
+  // 当切换日期或传入的 entry 变化时，重置本地编辑内容，避免跨天内容串联
+  useEffect(() => {
+    setContent(entry?.content || '')
+  }, [entry?.id, date])
 
   const saveEntry = async () => {
     if (!content.trim()) {

@@ -44,7 +44,7 @@ export function Navbar({ user }: NavbarProps) {
             <Link href="/calendar">
               <Button variant="ghost" size="sm">
                 <Calendar className="h-4 w-4 mr-1" />
-                日历记录
+                日历提醒
               </Button>
             </Link>
             
@@ -72,7 +72,7 @@ export function Navbar({ user }: NavbarProps) {
             <Link href="/journal">
               <Button variant="ghost" size="sm">
                 <BookOpen className="h-4 w-4 mr-1" />
-                日历提醒
+                日历记录
               </Button>
             </Link>
             
