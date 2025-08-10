@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { Trash2, Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -202,7 +202,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                         className="h-8"
                       />
                     ) : (
-                      format(new Date(task.date), 'MM/dd')
+                      format(parse(task.date, 'yyyy-MM-dd', new Date()), 'MM/dd')
                     )}
                   </div>
                   <div className="text-sm font-medium text-gray-900 truncate">

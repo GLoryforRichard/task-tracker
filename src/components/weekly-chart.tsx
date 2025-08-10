@@ -34,8 +34,8 @@ export function WeeklyChart() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const weekStart = startOfWeek(currentWeek)
-      const weekEnd = endOfWeek(currentWeek)
+      const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 })
+      const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 })
 
       const { data, error } = await supabase
         .from('tasks')
@@ -54,8 +54,8 @@ export function WeeklyChart() {
   }, [currentWeek, supabase])
 
   const processChartData = useCallback(() => {
-    const weekStart = startOfWeek(currentWeek)
-    const weekEnd = endOfWeek(currentWeek)
+    const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 })
+    const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 })
     const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
     // Group tasks by category
@@ -124,7 +124,7 @@ export function WeeklyChart() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-2xl font-bold">
-          {format(startOfWeek(currentWeek), 'MM/dd')} - {format(endOfWeek(currentWeek), 'MM/dd')}
+          {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'MM/dd')} - {format(endOfWeek(currentWeek, { weekStartsOn: 1 }), 'MM/dd')}
         </h2>
         <Button
           variant="outline"

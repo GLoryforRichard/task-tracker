@@ -34,7 +34,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const weekStart = format(startOfWeek(new Date(date)), 'yyyy-MM-dd')
+        const weekStart = format(startOfWeek(new Date(date), { weekStartsOn: 1 }), 'yyyy-MM-dd')
         
         const { data: goalsData, error: goalsError } = await supabase
           .from('weekly_goals')

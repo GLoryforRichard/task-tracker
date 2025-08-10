@@ -22,7 +22,7 @@ interface CategoryStats {
 }
 
 export function WeeklyGoals() {
-  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date()))
+  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [goals, setGoals] = useState<WeeklyGoal[]>([])
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([])
   const [newCategory, setNewCategory] = useState('')
@@ -102,7 +102,7 @@ export function WeeklyGoals() {
         user_id: user.id,
         task_category: newCategory,
         target_hours: parseFloat(newTargetHours),
-        week_start: format(currentWeek, 'yyyy-MM-dd'),
+         week_start: format(currentWeek, 'yyyy-MM-dd'),
       })
 
       if (error) throw error

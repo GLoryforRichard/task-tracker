@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths, parse } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DayDetailModal } from '@/components/day-detail-modal'
@@ -57,14 +57,14 @@ export function CalendarView({ onDateSelect }: CalendarViewProps) {
   const getDaysInMonth = () => {
     const monthStart = startOfMonth(currentDate)
     const monthEnd = endOfMonth(currentDate)
-    const startDate = startOfWeek(monthStart)
-    const endDate = endOfWeek(monthEnd)
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 })
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
 
     return eachDayOfInterval({ start: startDate, end: endDate })
   }
 
   const getTasksForDay = (date: Date) => {
-    return tasks.filter(task => isSameDay(new Date(task.date), date))
+    return tasks.filter(task => isSameDay(parse(task.date, 'yyyy-MM-dd', new Date()), date))
   }
 
   const getTotalHoursForDay = (date: Date) => {
