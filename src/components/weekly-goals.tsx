@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns'
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
@@ -165,7 +165,7 @@ export function WeeklyGoals() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-2xl font-bold">
-          {format(currentWeek, 'yyyy年MM月dd日')} - {format(addWeeks(currentWeek, 1), 'MM月dd日')}
+          {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy年MM月dd日')} - {format(endOfWeek(currentWeek, { weekStartsOn: 1 }), 'MM月dd日')}
         </h2>
         <Button
           variant="outline"
