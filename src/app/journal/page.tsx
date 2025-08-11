@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/navbar'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { AutoSaveIndicator } from '@/components/ui/auto-save-indicator'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { createClient } from '@/utils/supabase/client'
 import { ChevronLeft, ChevronRight, Calendar, BookOpen, Plus } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns'
@@ -260,10 +263,24 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
 
+  // 自动保存hook
+  const { autoSaving, lastSaved, clearDraft, loadDraft } = useAutoSave({
+    key: `journal_draft_${format(date, 'yyyy-MM-dd')}`,
+    data: { content, date: format(date, 'yyyy-MM-dd') }
+  })
+
   // 当切换日期或传入的 entry 变化时，重置本地编辑内容，避免跨天内容串联
   useEffect(() => {
-    setContent(entry?.content || '')
-  }, [entry?.id, date])
+    // 先尝试加载草稿
+    const draftData = loadDraft()
+    if (draftData && draftData.content && !entry?.content) {
+      // 如果有草稿且没有现有内容，使用草稿
+      setContent(draftData.content)
+    } else {
+      // 否则使用现有内容
+      setContent(entry?.content || '')
+    }
+  }, [entry?.id, date, loadDraft])
 
   const saveEntry = async () => {
     if (!content.trim()) {
@@ -303,6 +320,7 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
       }
 
       onSave()
+      clearDraft() // 保存成功后清除草稿
       alert('记录保存成功！')
     } catch (error) {
       console.error('Error saving journal entry:', error)
@@ -325,6 +343,7 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
 
       onSave()
       onClose()
+      clearDraft() // 删除成功后清除草稿
       alert('记录删除成功！')
     } catch (error) {
       console.error('Error deleting journal entry:', error)
@@ -335,9 +354,12 @@ function JournalEditor({ date, entry, onSave, onClose }: JournalEditorProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {format(date, 'yyyy年MM月dd日 EEEE')}
-        </h3>
+        <div>
+          <h3 className="text-lg font-semibold">
+            {format(date, 'yyyy年MM月dd日 EEEE')}
+          </h3>
+          <AutoSaveIndicator autoSaving={autoSaving} lastSaved={lastSaved} className="mt-1" />
+        </div>
         <div className="flex items-center space-x-2">
           {entry && (
             <Button

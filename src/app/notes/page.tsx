@@ -4,6 +4,10 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/navbar'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { AutoSaveIndicator } from '@/components/ui/auto-save-indicator'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { createClient } from '@/utils/supabase/client'
 import { Save, FileText, Trash2, Plus, Edit3 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -28,6 +32,13 @@ export default function NotesPage() {
   const router = useRouter()
   
   const supabase = createClient()
+
+  // 自动保存hook
+  const { autoSaving, lastSaved, clearDraft, loadDraft } = useAutoSave({
+    key: currentNote ? `note_draft_${currentNote.id}` : 'new_note_draft',
+    data: { title, content },
+    enabled: isEditing
+  })
 
   const checkUser = useCallback(async () => {
     try {
@@ -85,6 +96,18 @@ export default function NotesPage() {
     }
   }, [user, fetchNotes])
 
+  // 组件挂载时恢复草稿
+  useEffect(() => {
+    if (isEditing && !currentNote) {
+      // 新建笔记时加载草稿
+      const draftData = loadDraft()
+      if (draftData) {
+        setTitle(draftData.title || '')
+        setContent(draftData.content || '')
+      }
+    }
+  }, [isEditing, currentNote, loadDraft])
+
   const saveNote = async () => {
     if (!title.trim() || !content.trim()) {
       alert('请输入标题和内容')
@@ -123,6 +146,7 @@ export default function NotesPage() {
 
       await fetchNotes()
       setIsEditing(false)
+      clearDraft() // 保存成功后清除草稿
       alert('笔记保存成功！')
     } catch (error) {
       console.error('Error saving note:', error)
@@ -150,6 +174,7 @@ export default function NotesPage() {
         setContent('')
         setIsEditing(false)
       }
+      clearDraft() // 删除成功后清除草稿
       alert('笔记删除成功！')
     } catch (error) {
       console.error('Error deleting note:', error)
@@ -169,6 +194,8 @@ export default function NotesPage() {
     setTitle('')
     setContent('')
     setIsEditing(true)
+    // 新建笔记时清除草稿
+    clearDraft()
   }
 
   const startEdit = () => {
@@ -270,11 +297,16 @@ export default function NotesPage() {
               {currentNote || isEditing ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-5 w-5 text-gray-600" />
-                      <span className="text-sm text-gray-600">
-                        {currentNote ? '编辑笔记' : '新建笔记'}
-                      </span>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm text-gray-600">
+                          {currentNote ? '编辑笔记' : '新建笔记'}
+                        </span>
+                      </div>
+                      {isEditing && (
+                        <AutoSaveIndicator autoSaving={autoSaving} lastSaved={lastSaved} className="mt-1" />
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       {currentNote && !isEditing && (

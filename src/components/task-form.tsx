@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { format, startOfWeek } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { AutoSaveIndicator } from '@/components/ui/auto-save-indicator'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { createClient } from '@/utils/supabase/client'
 
 interface TaskFormProps {
@@ -25,9 +27,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [weeklyGoalId, setWeeklyGoalId] = useState<string>('')
   const [weeklyGoals, setWeeklyGoals] = useState<WeeklyGoal[]>([])
   const [loading, setLoading] = useState(false)
-  const [autoSaving, setAutoSaving] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const autoSaveTimer = useRef<NodeJS.Timeout | null>(null)
   
   const supabase = createClient()
 
@@ -56,78 +55,39 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
     fetchWeeklyGoals()
   }, [date, supabase])
 
-  // 自动保存功能
-  const autoSave = async () => {
-    const hasContent = taskName.trim() || hours.trim() || reflection.trim()
-    if (!hasContent) return
-
-    setAutoSaving(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      let taskCategory = taskName.trim()
-      if (weeklyGoalId) {
-        const selectedGoal = weeklyGoals.find(goal => goal.id === weeklyGoalId)
-        if (selectedGoal) {
-          taskCategory = selectedGoal.task_category
-        }
-      }
-
-      // 这里只是模拟自动保存到 localStorage
-      // 实际项目中可以保存为草稿到数据库
-      const draftData = {
-        date,
-        taskName,
-        hours,
-        reflection,
-        weeklyGoalId,
-        taskCategory,
-        timestamp: new Date().toISOString()
-      }
-      localStorage.setItem('task_draft', JSON.stringify(draftData))
-      setLastSaved(new Date())
-    } catch (error) {
-      console.error('Auto save error:', error)
-    } finally {
-      setAutoSaving(false)
+  // 计算任务分类
+  let taskCategory = taskName.trim()
+  if (weeklyGoalId) {
+    const selectedGoal = weeklyGoals.find(goal => goal.id === weeklyGoalId)
+    if (selectedGoal) {
+      taskCategory = selectedGoal.task_category
     }
   }
 
-  // 监听表单变化，触发自动保存
-  useEffect(() => {
-    if (autoSaveTimer.current) {
-      clearTimeout(autoSaveTimer.current)
+  // 自动保存hook
+  const { autoSaving, lastSaved, clearDraft, loadDraft } = useAutoSave({
+    key: 'task_draft',
+    data: {
+      date,
+      taskName,
+      hours,
+      reflection,
+      weeklyGoalId,
+      taskCategory
     }
-    
-    autoSaveTimer.current = setTimeout(() => {
-      autoSave()
-    }, 500) // 500ms 防抖
-
-    return () => {
-      if (autoSaveTimer.current) {
-        clearTimeout(autoSaveTimer.current)
-      }
-    }
-  }, [taskName, hours, reflection, weeklyGoalId, date, supabase, weeklyGoals])
+  })
 
   // 组件挂载时恢复草稿
   useEffect(() => {
-    const draft = localStorage.getItem('task_draft')
-    if (draft) {
-      try {
-        const draftData = JSON.parse(draft)
-        setDate(draftData.date || format(new Date(), 'yyyy-MM-dd'))
-        setTaskName(draftData.taskName || '')
-        setHours(draftData.hours || '')
-        setReflection(draftData.reflection || '')
-        setWeeklyGoalId(draftData.weeklyGoalId || '')
-        setLastSaved(draftData.timestamp ? new Date(draftData.timestamp) : null)
-      } catch (error) {
-        console.error('Error loading draft:', error)
-      }
+    const draftData = loadDraft()
+    if (draftData) {
+      setDate(draftData.date || format(new Date(), 'yyyy-MM-dd'))
+      setTaskName(draftData.taskName || '')
+      setHours(draftData.hours || '')
+      setReflection(draftData.reflection || '')
+      setWeeklyGoalId(draftData.weeklyGoalId || '')
     }
-  }, [])
+  }, [loadDraft])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,18 +98,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('请先登录')
 
-      // 根据选择的目标确定任务分类
-      let taskCategory = taskName.trim()
-      const selectedWeeklyGoalId = weeklyGoalId || null
-
-      // 如果选择了目标，使用目标的分类
-      if (weeklyGoalId) {
-        const selectedGoal = weeklyGoals.find(goal => goal.id === weeklyGoalId)
-        if (selectedGoal) {
-          taskCategory = selectedGoal.task_category
-        }
-      }
-
       const { error } = await supabase.from('tasks').insert({
         user_id: user.id,
         task_name: taskName,
@@ -157,7 +105,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         hours: parseFloat(hours),
         date: date,
         reflection: reflection || null,
-        weekly_goal_id: selectedWeeklyGoalId,
+        weekly_goal_id: weeklyGoalId || null,
       })
 
       if (error) throw error
@@ -167,8 +115,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       setHours('')
       setReflection('')
       setWeeklyGoalId('')
-      setLastSaved(null)
-      localStorage.removeItem('task_draft')
+      clearDraft()
 
       onTaskAdded?.()
     } catch (error) {
@@ -246,22 +193,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       </div>
 
       {/* 自动保存状态指示器 */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <div className="flex items-center space-x-2">
-          {autoSaving && (
-            <>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span>自动保存中...</span>
-            </>
-          )}
-          {lastSaved && !autoSaving && (
-            <>
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>已保存草稿 {format(lastSaved, 'HH:mm:ss')}</span>
-            </>
-          )}
-        </div>
-      </div>
+      <AutoSaveIndicator autoSaving={autoSaving} lastSaved={lastSaved} />
 
       <Button
         type="submit"

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AutoSaveIndicator } from '@/components/ui/auto-save-indicator'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
@@ -30,6 +32,12 @@ export function WeeklyGoals() {
   const [loading, setLoading] = useState(true)
   
   const supabase = createClient()
+
+  // 自动保存hook
+  const { autoSaving, lastSaved, clearDraft } = useAutoSave({
+    key: `weekly_goal_draft_${format(currentWeek, 'yyyy-MM-dd')}`,
+    data: { newCategory, newTargetHours }
+  })
 
   const fetchGoalsAndStats = useCallback(async () => {
     try {
@@ -109,6 +117,7 @@ export function WeeklyGoals() {
 
       setNewCategory('')
       setNewTargetHours('')
+      clearDraft() // 清除草稿
       fetchGoalsAndStats()
     } catch (error) {
       console.error('Error adding goal:', error)
@@ -178,15 +187,17 @@ export function WeeklyGoals() {
 
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">添加新目标</h3>
-        <div className="flex gap-4 items-end">
-          <div className="flex-1">
-            <label className="text-sm font-medium">任务类别</label>
-            <Input
-              placeholder="例如：学习、工作、运动"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-            />
-          </div>
+        <div className="space-y-3">
+          <AutoSaveIndicator autoSaving={autoSaving} lastSaved={lastSaved} />
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium">任务类别</label>
+              <Input
+                placeholder="例如：学习、工作、运动"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+              />
+            </div>
           <div className="w-32">
             <label className="text-sm font-medium">目标小时</label>
             <Input
@@ -196,10 +207,11 @@ export function WeeklyGoals() {
               onChange={(e) => setNewTargetHours(e.target.value)}
             />
           </div>
-          <Button onClick={addGoal} className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="h-4 w-4 mr-1" />
-            添加
-          </Button>
+            <Button onClick={addGoal} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Plus className="h-4 w-4 mr-1" />
+              添加
+            </Button>
+          </div>
         </div>
       </div>
 

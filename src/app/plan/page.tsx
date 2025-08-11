@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/navbar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AutoSaveIndicator } from '@/components/ui/auto-save-indicator'
+import { useAutoSave } from '@/hooks/use-auto-save'
 import { createClient } from '@/utils/supabase/client'
 import { Target, Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
@@ -344,6 +346,12 @@ function CreatePlanForm({ onSuccess, onCancel, defaultStartDate, defaultEndDate 
   const [saving, setSaving] = useState(false)
   const supabase = createClient()
 
+  // 自动保存hook
+  const { autoSaving, lastSaved, clearDraft } = useAutoSave({
+    key: 'create_plan_draft',
+    data: { title, startDate, endDate, description }
+  })
+
   const savePlan = async () => {
     if (!title.trim() || !startDate || !endDate) {
       alert('请填写完整信息')
@@ -369,6 +377,7 @@ function CreatePlanForm({ onSuccess, onCancel, defaultStartDate, defaultEndDate 
       if (error) throw error
 
       onSuccess()
+      clearDraft() // 清除草稿
       alert('计划创建成功！')
     } catch (error) {
       console.error('Error creating plan:', error)
@@ -380,7 +389,10 @@ function CreatePlanForm({ onSuccess, onCancel, defaultStartDate, defaultEndDate 
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-semibold mb-6">创建新计划</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">创建新计划</h2>
+        <AutoSaveIndicator autoSaving={autoSaving} lastSaved={lastSaved} />
+      </div>
       
       <div className="space-y-4">
         <div>
