@@ -17,14 +17,9 @@ interface WeeklyGoal {
   target_hours: number
 }
 
-const TASK_TYPES = [
-  '工作', '学习', '运动', '娱乐', '社交', '家务', '购物', '其他'
-]
-
 export function TaskForm({ onTaskAdded }: TaskFormProps) {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [taskName, setTaskName] = useState('')
-  const [taskType, setTaskType] = useState('')
   const [hours, setHours] = useState('')
   const [reflection, setReflection] = useState('')
   const [weeklyGoalId, setWeeklyGoalId] = useState<string>('')
@@ -63,7 +58,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
   // 自动保存功能
   const autoSave = async () => {
-    const hasContent = taskName.trim() || hours.trim() || reflection.trim() || taskType.trim()
+    const hasContent = taskName.trim() || hours.trim() || reflection.trim()
     if (!hasContent) return
 
     setAutoSaving(true)
@@ -84,7 +79,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       const draftData = {
         date,
         taskName,
-        taskType,
         hours,
         reflection,
         weeklyGoalId,
@@ -115,7 +109,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         clearTimeout(autoSaveTimer.current)
       }
     }
-  }, [taskName, taskType, hours, reflection, weeklyGoalId, date, supabase, weeklyGoals])
+  }, [taskName, hours, reflection, weeklyGoalId, date, supabase, weeklyGoals])
 
   // 组件挂载时恢复草稿
   useEffect(() => {
@@ -125,7 +119,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         const draftData = JSON.parse(draft)
         setDate(draftData.date || format(new Date(), 'yyyy-MM-dd'))
         setTaskName(draftData.taskName || '')
-        setTaskType(draftData.taskType || '')
         setHours(draftData.hours || '')
         setReflection(draftData.reflection || '')
         setWeeklyGoalId(draftData.weeklyGoalId || '')
@@ -161,7 +154,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         user_id: user.id,
         task_name: taskName,
         task_category: taskCategory,
-        task_type: taskType || null,
         hours: parseFloat(hours),
         date: date,
         reflection: reflection || null,
@@ -172,7 +164,6 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
 
       // Reset form and clear draft
       setTaskName('')
-      setTaskType('')
       setHours('')
       setReflection('')
       setWeeklyGoalId('')
@@ -213,21 +204,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">任务类型</label>
-        <select
-          value={taskType}
-          onChange={(e) => setTaskType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">选择任务类型（可选）</option>
-          {TASK_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </div>
+
 
       <div className="space-y-2">
         <label className="text-sm font-medium">花费时间（小时）</label>

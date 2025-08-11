@@ -12,7 +12,6 @@ interface Task {
   id: string
   task_name: string
   task_category: string
-  task_type?: string | null
   hours: number
   date: string
   reflection: string | null
@@ -33,7 +32,6 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editForm, setEditForm] = useState({
     task_name: '',
-    task_type: '',
     hours: '',
     reflection: ''
   })
@@ -139,7 +137,6 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
     setEditingTask(task)
     setEditForm({
       task_name: task.task_name,
-      task_type: task.task_type || '',
       hours: task.hours.toString(),
       reflection: task.reflection || ''
     })
@@ -149,7 +146,6 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
     setEditingTask(null)
     setEditForm({
       task_name: '',
-      task_type: '',
       hours: '',
       reflection: ''
     })
@@ -163,7 +159,6 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         .from('tasks')
         .update({
           task_name: editForm.task_name.trim(),
-          task_type: editForm.task_type || null,
           hours: parseFloat(editForm.hours),
           reflection: editForm.reflection.trim() || null,
           updated_at: new Date().toISOString()
@@ -233,7 +228,6 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
             <div className="grid grid-cols-7 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
-              <div>类型</div>
               <div>时长</div>
               <div>分类</div>
               <div>总耗时</div>
@@ -264,9 +258,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                   <div className="text-sm font-medium text-gray-900 truncate">
                     {task.task_name}
                   </div>
-                  <div className="text-sm text-gray-600 truncate">
-                    {task.task_type || '-'}
-                  </div>
+
                   <div className="text-sm text-gray-600">
                     {task.hours} 小时
                   </div>
@@ -374,24 +366,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">任务类型</label>
-                <select
-                  value={editForm.task_type}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, task_type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">选择任务类型（可选）</option>
-                  <option value="工作">工作</option>
-                  <option value="学习">学习</option>
-                  <option value="运动">运动</option>
-                  <option value="娱乐">娱乐</option>
-                  <option value="社交">社交</option>
-                  <option value="家务">家务</option>
-                  <option value="购物">购物</option>
-                  <option value="其他">其他</option>
-                </select>
-              </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">花费时间（小时）</label>

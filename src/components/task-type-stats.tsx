@@ -33,10 +33,10 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
       const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }) // 周一开始
       const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 })
 
-      // 获取本周的任务数据，包含类型为空的任务
+      // 获取本周的任务数据，按目标分类统计
       const { data, error } = await supabase
         .from('tasks')
-        .select('task_type, hours')
+        .select('task_category, hours')
         .eq('user_id', user.id)
         .gte('date', format(weekStart, 'yyyy-MM-dd'))
         .lte('date', format(weekEnd, 'yyyy-MM-dd'))
@@ -47,16 +47,16 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
       const statsMap: { [key: string]: { total_hours: number; task_count: number } } = {}
       
       data?.forEach((task) => {
-        const type = task.task_type || '未分类'
-        if (!statsMap[type]) {
-          statsMap[type] = { total_hours: 0, task_count: 0 }
+        const category = task.task_category || '未分类'
+        if (!statsMap[category]) {
+          statsMap[category] = { total_hours: 0, task_count: 0 }
         }
-        statsMap[type].total_hours += task.hours
-        statsMap[type].task_count += 1
+        statsMap[category].total_hours += task.hours
+        statsMap[category].task_count += 1
       })
 
-      const formattedStats = Object.entries(statsMap).map(([task_type, data]) => ({
-        task_type,
+      const formattedStats = Object.entries(statsMap).map(([task_category, data]) => ({
+        task_type: task_category,
         total_hours: data.total_hours,
         task_count: data.task_count
       })).sort((a, b) => b.total_hours - a.total_hours)
@@ -114,7 +114,7 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
   if (stats.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">本周任务类型统计</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">本周目标分类统计</h3>
         <div className="text-center py-12">
           <p className="text-gray-500">本周暂无任务数据</p>
           <p className="text-sm text-gray-400 mt-1">添加本周任务即可查看统计</p>
@@ -127,7 +127,7 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">本周任务类型统计</h3>
+          <h3 className="text-lg font-semibold text-gray-900">本周目标分类统计</h3>
           <p className="text-sm text-gray-500">
             {format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'MM月dd日')} - {format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'MM月dd日')}
           </p>
