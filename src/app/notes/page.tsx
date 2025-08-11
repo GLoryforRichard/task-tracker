@@ -210,7 +210,7 @@ export default function NotesPage() {
                 <Button
                   onClick={startNewNote}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   新建
@@ -347,7 +347,7 @@ export default function NotesPage() {
                   </p>
                   <Button
                     onClick={startNewNote}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     创建第一条笔记

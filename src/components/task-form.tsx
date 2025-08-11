@@ -266,7 +266,7 @@ export function TaskForm({ onTaskAdded }: TaskFormProps) {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       >
         {loading ? '保存中...' : '保存任务'}
       </Button>

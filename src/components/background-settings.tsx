@@ -293,7 +293,7 @@ export function BackgroundSettings({ isOpen, onClose }: BackgroundSettingsProps)
                   <Button 
                     onClick={handleApplyImage} 
                     disabled={isApplying}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     {isApplying ? (
                       <div className="flex items-center justify-center">

@@ -196,7 +196,7 @@ export function WeeklyGoals() {
               onChange={(e) => setNewTargetHours(e.target.value)}
             />
           </div>
-          <Button onClick={addGoal} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={addGoal} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-1" />
             添加
           </Button>

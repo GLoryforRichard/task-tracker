@@ -37,7 +37,7 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/login">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
                 开始记录
               </Button>
             </Link>

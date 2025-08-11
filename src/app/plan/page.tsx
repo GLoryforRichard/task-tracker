@@ -453,6 +453,9 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
   const [newItemTitle, setNewItemTitle] = useState('')
   const [newItemDate, setNewItemDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [showAddItem, setShowAddItem] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDate, setEditDate] = useState('')
   const supabase = createClient()
 
   const addPlanItem = async () => {
@@ -515,6 +518,45 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
       console.error('Error deleting plan item:', error)
       alert('删除失败，请重试')
     }
+  }
+
+  const startEditItem = (item: PlanItem) => {
+    setEditingItemId(item.id)
+    setEditTitle(item.title)
+    setEditDate(item.date)
+  }
+
+  const saveItem = async () => {
+    if (!editTitle.trim()) {
+      alert('请输入任务标题')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('plan_items')
+        .update({
+          title: editTitle.trim(),
+          date: editDate
+        })
+        .eq('id', editingItemId)
+
+      if (error) throw error
+
+      setEditingItemId(null)
+      setEditTitle('')
+      setEditDate('')
+      onUpdate()
+    } catch (error) {
+      console.error('Error updating plan item:', error)
+      alert('更新失败，请重试')
+    }
+  }
+
+  const cancelEditItem = () => {
+    setEditingItemId(null)
+    setEditTitle('')
+    setEditDate('')
   }
 
 return (
@@ -597,22 +639,72 @@ return (
                 </button>
                 
                 <div className="flex-1">
-                  <div className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                    {item.title}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {format(parseISO(item.date), 'MM月dd日')}
-                  </div>
+                  {editingItemId === item.id ? (
+                    <>
+                      <Input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="mb-2"
+                        placeholder="任务标题"
+                      />
+                      <Input
+                        type="date"
+                        value={editDate}
+                        onChange={(e) => setEditDate(e.target.value)}
+                        className="w-44"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <div className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                        {item.title}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {format(parseISO(item.date), 'MM月dd日')}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <Button
-                  onClick={() => deleteItem(item.id)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:bg-red-100"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center space-x-1">
+                  {editingItemId === item.id ? (
+                    <>
+                      <Button
+                        onClick={saveItem}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        保存
+                      </Button>
+                      <Button
+                        onClick={cancelEditItem}
+                        variant="outline"
+                        size="sm"
+                      >
+                        取消
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => startEditItem(item)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        onClick={() => deleteItem(item.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
