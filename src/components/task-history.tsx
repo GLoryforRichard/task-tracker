@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { format, parse } from 'date-fns'
-import { Trash2, Pencil, Check, X } from 'lucide-react'
+import { Trash2, Pencil, Check, X, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { createClient } from '@/utils/supabase/client'
 
 interface Task {
   id: string
   task_name: string
   task_category: string
+  task_type?: string | null
   hours: number
   date: string
   reflection: string | null
@@ -28,6 +30,13 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
   const [totalHours, setTotalHours] = useState(0)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingDate, setEditingDate] = useState<string>('')
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [editForm, setEditForm] = useState({
+    task_name: '',
+    task_type: '',
+    hours: '',
+    reflection: ''
+  })
   
   const supabase = createClient()
 
@@ -126,6 +135,52 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
     }
   }
 
+  const startEditTask = (task: Task) => {
+    setEditingTask(task)
+    setEditForm({
+      task_name: task.task_name,
+      task_type: task.task_type || '',
+      hours: task.hours.toString(),
+      reflection: task.reflection || ''
+    })
+  }
+
+  const cancelEditTask = () => {
+    setEditingTask(null)
+    setEditForm({
+      task_name: '',
+      task_type: '',
+      hours: '',
+      reflection: ''
+    })
+  }
+
+  const saveEditTask = async () => {
+    if (!editingTask) return
+    
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({
+          task_name: editForm.task_name.trim(),
+          task_type: editForm.task_type || null,
+          hours: parseFloat(editForm.hours),
+          reflection: editForm.reflection.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingTask.id)
+
+      if (error) throw error
+
+      await fetchTasks()
+      cancelEditTask()
+      alert('任务更新成功！')
+    } catch (error) {
+      console.error('Error updating task:', error)
+      alert('更新任务失败，请重试')
+    }
+  }
+
   useEffect(() => {
     fetchTasks()
   }, [fetchTasks, refreshTrigger])
@@ -175,9 +230,10 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
         ) : (
           <div className="overflow-hidden">
             {/* 表头 */}
-            <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
+            <div className="grid grid-cols-7 gap-4 py-3 px-4 bg-gray-50/40 backdrop-blur-sm rounded-t-lg border-b text-sm font-medium text-gray-600">
               <div>日期</div>
               <div>任务名称</div>
+              <div>类型</div>
               <div>时长</div>
               <div>分类</div>
               <div>总耗时</div>
@@ -189,7 +245,7 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
               {tasks.map((task, index) => (
                 <div 
                   key={task.id}
-                  className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
+                  className={`grid grid-cols-7 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/30 transition-colors ${
                     index % 2 === 0 ? 'bg-white/20' : 'bg-gray-50/30'
                   }`}
                 >
@@ -207,6 +263,9 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                   </div>
                   <div className="text-sm font-medium text-gray-900 truncate">
                     {task.task_name}
+                  </div>
+                  <div className="text-sm text-gray-600 truncate">
+                    {task.task_type || '-'}
                   </div>
                   <div className="text-sm text-gray-600">
                     {task.hours} 小时
@@ -240,15 +299,26 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEditDate(task)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-6 w-6 p-0"
-                        title="编辑日期"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditDate(task)}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-6 w-6 p-0"
+                          title="编辑日期"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditTask(task)}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50 h-6 w-6 p-0"
+                          title="编辑任务"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </>
                     )}
                     <Button
                       variant="ghost"
@@ -265,9 +335,10 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
             </div>
             
             {/* 底部汇总 */}
-                               <div className="grid grid-cols-6 gap-4 py-3 px-4 bg-gray-100/40 backdrop-blur-sm rounded-b-lg border-t font-medium text-sm">
+            <div className="grid grid-cols-7 gap-4 py-3 px-4 bg-gray-100/40 backdrop-blur-sm rounded-b-lg border-t font-medium text-sm">
               <div className="text-gray-600">总计</div>
               <div className="text-gray-600">{tasks.length} 条记录</div>
+              <div></div>
               <div className="text-gray-900">{totalHours} 小时</div>
               <div></div>
               <div></div>
@@ -276,6 +347,92 @@ export function TaskHistory({ refreshTrigger }: TaskHistoryProps) {
           </div>
         )}
       </div>
+
+      {/* 任务编辑模态框 */}
+      {editingTask && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">编辑任务</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={cancelEditTask}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">任务名称</label>
+                <Input
+                  value={editForm.task_name}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, task_name: e.target.value }))}
+                  placeholder="输入任务名称"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">任务类型</label>
+                <select
+                  value={editForm.task_type}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, task_type: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">选择任务类型（可选）</option>
+                  <option value="工作">工作</option>
+                  <option value="学习">学习</option>
+                  <option value="运动">运动</option>
+                  <option value="娱乐">娱乐</option>
+                  <option value="社交">社交</option>
+                  <option value="家务">家务</option>
+                  <option value="购物">购物</option>
+                  <option value="其他">其他</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">花费时间（小时）</label>
+                <Input
+                  type="number"
+                  step="0.5"
+                  min="0.5"
+                  value={editForm.hours}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, hours: e.target.value }))}
+                  placeholder="请输入花费的小时数"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">反思总结</label>
+                <Textarea
+                  value={editForm.reflection}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, reflection: e.target.value }))}
+                  placeholder="记录收获、困难、改进建议等"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={cancelEditTask}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={saveEditTask}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  保存
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

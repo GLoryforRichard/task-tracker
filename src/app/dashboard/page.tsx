@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/navbar'
 import { TaskForm } from '@/components/task-form'
 import { TaskHistory } from '@/components/task-history'
+import { TaskTypeStats } from '@/components/task-type-stats'
 import { createClient } from '@/utils/supabase/client'
 
 export default function Dashboard() {
@@ -68,8 +69,13 @@ export default function Dashboard() {
         
         {/* 历史记录区域 */}
         <div className="mt-8">
-                          <TaskHistory refreshTrigger={refreshTrigger} />
-                </div>
+          <TaskHistory refreshTrigger={refreshTrigger} />
+        </div>
+
+        {/* 任务类型统计区域 */}
+        <div className="mt-8">
+          <TaskTypeStats refreshTrigger={refreshTrigger} />
+        </div>
               </div>
             </div>
     </div>

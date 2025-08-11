@@ -170,6 +170,7 @@ export type Database = {
           user_id: string
           task_name: string
           task_category: string
+          task_type: string | null
           hours: number
           date: string
           reflection: string | null
@@ -182,6 +183,7 @@ export type Database = {
           user_id: string
           task_name: string
           task_category: string
+          task_type?: string | null
           hours: number
           date: string
           reflection?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           user_id?: string
           task_name?: string
           task_category?: string
+          task_type?: string | null
           hours?: number
           date?: string
           reflection?: string | null
