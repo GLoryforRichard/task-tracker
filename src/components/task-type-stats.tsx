@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { createClient } from '@/utils/supabase/client'
 
 interface TaskTypeStats {
@@ -28,12 +29,17 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // 获取按类型分组的统计数据
+      // 获取本周的开始和结束日期
+      const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }) // 周一开始
+      const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 })
+
+      // 获取本周的任务数据，包含类型为空的任务
       const { data, error } = await supabase
         .from('tasks')
         .select('task_type, hours')
         .eq('user_id', user.id)
-        .not('task_type', 'is', null)
+        .gte('date', format(weekStart, 'yyyy-MM-dd'))
+        .lte('date', format(weekEnd, 'yyyy-MM-dd'))
 
       if (error) throw error
 
@@ -108,10 +114,10 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
   if (stats.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">任务类型统计</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">本周任务类型统计</h3>
         <div className="text-center py-12">
-          <p className="text-gray-500">暂无任务类型数据</p>
-          <p className="text-sm text-gray-400 mt-1">添加任务时选择类型即可查看统计</p>
+          <p className="text-gray-500">本周暂无任务数据</p>
+          <p className="text-sm text-gray-400 mt-1">添加本周任务即可查看统计</p>
         </div>
       </div>
     )
@@ -120,7 +126,12 @@ export function TaskTypeStats({ refreshTrigger }: TaskTypeStatsProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">任务类型统计</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">本周任务类型统计</h3>
+          <p className="text-sm text-gray-500">
+            {format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'MM月dd日')} - {format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'MM月dd日')}
+          </p>
+        </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setViewMode('pie')}

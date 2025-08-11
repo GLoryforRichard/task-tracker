@@ -67,14 +67,14 @@ export default function Dashboard() {
 
         <TaskForm onTaskAdded={handleTaskAdded} />
         
-        {/* 历史记录区域 */}
-        <div className="mt-8">
-          <TaskHistory refreshTrigger={refreshTrigger} />
-        </div>
-
         {/* 任务类型统计区域 */}
         <div className="mt-8">
           <TaskTypeStats refreshTrigger={refreshTrigger} />
+        </div>
+
+        {/* 历史记录区域 */}
+        <div className="mt-8">
+          <TaskHistory refreshTrigger={refreshTrigger} />
         </div>
               </div>
             </div>
