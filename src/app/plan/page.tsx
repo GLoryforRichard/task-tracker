@@ -527,7 +527,7 @@ function PlanEditor({ plan, items, onUpdate, onClose }: PlanEditorProps) {
   }
 
   const saveItem = async () => {
-    if (!editTitle.trim()) {
+    if (!editTitle.trim() || !editingItemId) {
       alert('请输入任务标题')
       return
     }
